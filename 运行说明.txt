@@ -1,0 +1,7 @@
+1>采用myeclipse6.6导入工程
+2>采用utf8字符集编码创建数据库,名为:itcast。DDL语句如下：
+CREATE DATABASE `itcast` CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
+3>修改persistence.xml中的数据库连接信息
+4>成功启动后,执行http://localhost:8080/system/init.do初始化信息
+5>访问http://localhost:8080/进入主页
+6>访问http://localhost:8080/control/center/main.do进入后台办公系统

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+	<aop:aspectj-autoproxy/>
+	<context:component-scan base-package="cn.itcast"/>	
+    <!--  使用数据源和指定persistence.xml位置的方式创建entityManagerFactory,如果使用的不是hibernate JPA实现,
+    需要在tomcat作一些特殊配置.具体参考手册
+    注意:使用该方式需要把persistence.xml中的hibernate.connection.driver_class,hibernate.connection.username,hibernate.connection.password,hibernate.connection.url配置删除
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+	    <property name="driverClassName" value="${driverClassName}"/>
+	    <property name="url" value="${url}"/>
+	    <property name="username" value="${username}"/>
+	    <property name="password" value="${password}"/>
+	    连接池启动时的初始值
+	    <property name="initialSize" value="${initialSize}"/>
+	    连接池的最大值
+	    <property name="maxActive" value="${maxActive}"/>
+	     最大空闲值.当经过一个高峰时间后，连接池可以慢慢将已经用不到的连接慢慢释放一部分，一直减少到maxIdle为止
+	    <property name="maxIdle" value="${maxIdle}"/>
+	     最小空闲值.当空闲的连接数少于阀值时，连接池就会预申请去一些连接，以免洪峰来时来不及申请
+	    <property name="minIdle" value="${minIdle}"/>
+  	</bean>	
+	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="persistenceXmlLocation" value="classpath:META-INF/persistence.xml" />
+			<property name="loadTimeWeaver">
+	          <bean class="org.springframework.instrument.classloading.InstrumentationLoadTimeWeaver"/>
+	       </property>
+	</bean>
+	-->
+   <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalEntityManagerFactoryBean">
+ 		<property name="persistenceUnitName" value="itcast"/>
+   </bean>   
+   <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory"/>
+   </bean>
+   
+   <tx:annotation-driven transaction-manager="transactionManager"/>
+   
+   <bean id="compass" class="org.compass.spring.LocalCompassBean">
+		<!-- 指定映射类方式 -->
+		<property name="classMappings">
+			<list>
+				<value>cn.itcast.bean.product.ProductInfo</value>
+				<value>cn.itcast.bean.product.Brand</value>
+				<value>cn.itcast.bean.product.ProductStyle</value>
+				<value>cn.itcast.bean.product.ProductType</value>
+			</list>
+		</property>
+		<property name="compassSettings">
+			<props>
+				<prop key="compass.engine.connection">file://e:/index</prop>
+				<prop key="compass.engine.highlighter.default.formatter.simple.pre"><![CDATA[<font color='red'>]]></prop>
+				<prop key="compass.engine.highlighter.default.formatter.simple.post"><![CDATA[</font>]]></prop>
+				<prop key="compass.transaction.factory">org.compass.spring.transaction.SpringSyncTransactionFactory</prop>
+			</props>
+		</property>
+		<property name="transactionManager" ref="transactionManager" />
+	</bean>
+	<!-- CompassGps为CompassGpsDevice提供Compass对象，他们一起为程序提供索引的实时更新 -->
+	<bean id="compassGps" class="org.compass.gps.impl.SingleCompassGps" init-method="start" destroy-method="stop">
+		<property name="compass" ref="compass" />
+		<property name="gpsDevices">
+			<list>
+				<bean class="org.compass.spring.device.SpringSyncTransactionGpsDeviceWrapper">
+					<property name="gpsDevice">
+						<!-- 为gpsDevice属性注入针对JPA的GPS驱动 -->
+						<bean class="org.compass.gps.device.jpa.JpaGpsDevice">
+							<property name="name" value="jpaDevice" />
+							<property name="entityManagerFactory" ref="entityManagerFactory" />
+							<property name="injectEntityLifecycleListener" value="true"/>
+						</bean>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+</beans>

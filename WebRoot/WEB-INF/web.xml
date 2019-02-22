@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="WebApp_ID" version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+	<display-name>babasport</display-name>
+    <context-param>
+	  <param-name>contextConfigLocation</param-name>
+	  <param-value>classpath:beans.xml</param-value>
+	</context-param>
+	<!-- 对Spring容器进行实例化 -->
+	<listener>
+	  <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+	<filter>
+		    <filter-name>CacheFilter</filter-name>
+		    <filter-class>com.opensymphony.oscache.web.filter.CacheFilter</filter-class>
+		    <init-param>
+		        <param-name>time</param-name>
+		        <param-value>7200</param-value>
+		    </init-param>
+		    <init-param>
+		        <param-name>scope</param-name>
+		        <param-value>application</param-value>
+		    </init-param>
+	</filter>
+	<filter-mapping>
+		    <filter-name>CacheFilter</filter-name>
+		    <url-pattern>/product/*</url-pattern>
+	</filter-mapping>
+  
+    <filter>
+        <filter-name>Spring OpenEntityManagerInViewFilter</filter-name>
+        <filter-class>org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter</filter-class>
+   		<init-param>
+   		<!-- 指定org.springframework.orm.jpa.LocalEntityManagerFactoryBean在spring配置文件中的名称,默认值为entityManagerFactory
+   		如果LocalEntityManagerFactoryBean在spring中的名称不是entityManagerFactory,该参数一定要指定,否则会出现找不到entityManagerFactory的例外 -->
+			<param-name>entityManagerFactoryBeanName</param-name>
+			<param-value>entityManagerFactory</param-value>
+		</init-param>	
+    </filter>
+    <filter-mapping>
+        <filter-name>Spring OpenEntityManagerInViewFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+	<filter>
+        <filter-name>codeFilter</filter-name>
+        <filter-class>cn.itcast.web.filter.SetCodeFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>codeFilter</filter-name>
+        <url-pattern>*.do</url-pattern>
+    </filter-mapping> 
+    <filter-mapping>
+        <filter-name>codeFilter</filter-name>
+        <url-pattern>*.jsp</url-pattern>
+    </filter-mapping>
+ <!-- 该Filter用于验证用户是否已经登录,没有未登录,即重定向到登录界面 -->
+ 	<filter>
+        <filter-name>LogonValidateFilter</filter-name>
+        <filter-class>cn.itcast.web.filter.LogonValidateFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>LogonValidateFilter</filter-name>
+        <url-pattern>/customer/*</url-pattern>
+    </filter-mapping> 
+    
+    <filter>
+        <filter-name>EmployeeLogonValidate</filter-name>
+        <filter-class>cn.itcast.web.filter.EmployeeValidateFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>EmployeeLogonValidate</filter-name>
+        <url-pattern>/control/*</url-pattern>
+    </filter-mapping>
+    
+  <!-- 该Filter用于验证购物车里面是否存在商品,如果不存在,即提示"购物车没有商品,请购买商品后再执行该操作" -->
+ 	<filter>
+        <filter-name>BuyCartValidateFilter</filter-name>
+        <filter-class>cn.itcast.web.filter.BuyCartValidateFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>BuyCartValidateFilter</filter-name>
+        <url-pattern>/customer/shopping/*</url-pattern>
+    </filter-mapping> 
+              
+	<servlet>
+		<servlet-name>struts</servlet-name>
+		<servlet-class>org.apache.struts.action.ActionServlet</servlet-class>
+		<init-param>
+			<param-name>config</param-name>
+			<param-value>/WEB-INF/struts-config.xml</param-value>
+		</init-param>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>struts</servlet-name>
+		<url-pattern>*.do</url-pattern>
+	</servlet-mapping>
+	
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+		<welcome-file>index.jsp</welcome-file>
+	</welcome-file-list>
+</web-app>
